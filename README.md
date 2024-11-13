@@ -28,6 +28,7 @@ Required python libraries:
   Scikit-image: https://scikit-image.org/
   Tensorflow: https://www.tensorflow.org/
   TCAV: https://github.com/tensorflow/tcav
+  gdown
 ```
 
 ### Installing
@@ -55,7 +56,21 @@ It should contain (at least) num_random_exp + 2 folders:
 2-"random_discovery" which contains randomly selected images of the same dataset (at lease $max_imgs number of images).
 3-"random500_0, ..., random_500_${num_random_exp} where each one contains 500 randomly selected images from the data set"
 ```
+Download datasets
+```aiignore
+gdown "https://drive.google.com/uc?export=download&id=1DRDFp9kwl6rBuyktiKu8CTHfwFUBrj0m" -O 9qtbupwrr6axpdcxhw7s1.zip
+```
 
+Create the Directory Structure:
+
+```aiignore
+
+mkdir -p SOURCE_DIR/zebra
+mkdir -p SOURCE_DIR/random_discovery
+for i in $(seq 0 19); do
+  mkdir -p SOURCE_DIR/random500_$i
+done
+```
 ```
 num_parallel_runs: Number of parallel jobs (loading images, etc). If 0, parallel processing is deactivated.
 ```
