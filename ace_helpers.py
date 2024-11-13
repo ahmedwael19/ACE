@@ -13,7 +13,7 @@ from sklearn import linear_model
 from sklearn.model_selection import cross_val_score
 import tensorflow as tf
 
-def make_model(sess, model_to_run, model_path, 
+def make_model(sess, model_to_run, model_path,
                labels_path, randomize=False,):
   """Make an instance of a model.
 
@@ -35,7 +35,7 @@ def make_model(sess, model_to_run, model_path,
         sess, model_saved_path=model_path, labels_path=labels_path)
   elif model_to_run == 'GoogleNet':
     # common_typos_disable
-    mymodel = model.GoolgeNetWrapper_public(
+    mymodel = model.GoogleNetWrapper_public(
         sess, model_saved_path=model_path, labels_path=labels_path)
   else:
     raise ValueError('Invalid model name')
@@ -54,8 +54,8 @@ def load_image_from_file(filename, shape):
   Rasies:
     exception if the image was not the right shape.
   """
-  if not tf.gfile.Exists(filename):
-    tf.logging.error('Cannot find file: {}'.format(filename))
+  if not tf.io.gfile.exists(filename):
+    tf.get_logger().error('Cannot find file: {}'.format(filename))
     return None
   try:
     img = np.array(Image.open(filename).resize(
@@ -75,8 +75,8 @@ def load_image_from_file(filename, shape):
 
 def load_images_from_files(filenames, max_imgs=500, return_filenames=False,
                            do_shuffle=True, run_parallel=True,
-                           shape=(299, 299),
-                           num_workers=100):
+                           shape=(128, 128),
+                           num_workers=1):
   """Return image arrays from filenames.
   Args:
     filenames: locations of image files.
@@ -98,6 +98,7 @@ def load_images_from_files(filenames, max_imgs=500, return_filenames=False,
     final_filenames = []
   if run_parallel:
     pool = multiprocessing.Pool(num_workers)
+    print(filenames)
     imgs = pool.map(lambda filename: load_image_from_file(filename, shape),
                     filenames[:max_imgs])
     if return_filenames:
@@ -413,7 +414,7 @@ def save_ace_report(cd, accs, scores, address):
     for concept in cd.dic[bn]['concepts']:
       report += '\n' + bn + ':' + concept + ':' + str(
           np.mean(accs[bn][concept]))
-  with tf.gfile.Open(address, 'w') as f:
+  with open(address, 'w') as f:
     f.write(report)
   report = '\n\n\t\t\t ---TCAV scores---'
   for bn in cd.bottlenecks:
@@ -423,7 +424,7 @@ def save_ace_report(cd, accs, scores, address):
           scores[bn][concept], scores[bn][cd.random_concept])
       report += '\n{}:{}:{},{}'.format(bn, concept,
                                        np.mean(scores[bn][concept]), pvalue)
-  with tf.gfile.Open(address, 'w') as f:
+  with open(address, 'a') as f:
     f.write(report)
 
 
@@ -442,8 +443,8 @@ def save_concepts(cd, concepts_dir):
           np.uint8)
       images = (np.clip(cd.dic[bn][concept]['images'], 0, 1) * 256).astype(
           np.uint8)
-      tf.gfile.MakeDirs(patches_dir)
-      tf.gfile.MakeDirs(images_dir)
+      os.makedirs(patches_dir, exist_ok = True)
+      os.makedirs(images_dir, exist_ok = True)
       image_numbers = cd.dic[bn][concept]['image_numbers']
       image_addresses, patch_addresses = [], []
       for i in range(len(images)):
@@ -464,13 +465,7 @@ def save_images(addresses, images):
     images: The list of all images in numpy uint8 format.
   """
   if not isinstance(addresses, list):
-    image_addresses = []
-    for i, image in enumerate(images):
-      image_name = '0' * (3 - int(np.log10(i + 1))) + str(i + 1) + '.png'
-      image_addresses.append(os.path.join(addresses, image_name))
-    addresses = image_addresses
+    addresses = [os.path.join(addresses, f"{i + 1:03}.png") for i in range(len(images))]
   assert len(addresses) == len(images), 'Invalid number of addresses'
   for address, image in zip(addresses, images):
-    with tf.gfile.Open(address, 'w') as f:
-      Image.fromarray(image).save(f, format='PNG')
-
+    Image.fromarray(image).save(address, format='PNG')

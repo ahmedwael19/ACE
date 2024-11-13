@@ -112,10 +112,12 @@ class ConceptDiscovery(object):
       Images of the desired concept or class.
     """
     concept_dir = os.path.join(self.source_dir, concept)
-    img_paths = [
-        os.path.join(concept_dir, d)
-        for d in tf.gfile.ListDirectory(concept_dir)
-    ]
+    # Check if the directory exists
+    if not os.path.exists(concept_dir):
+        print(f"Directory not found: {concept_dir}")
+        return []  # Return an empty list if the directory does not exist
+
+    img_paths = [os.path.join(concept_dir, d) for d in os.listdir(concept_dir)]
     return load_images_from_files(
         img_paths,
         max_imgs=max_imgs,
@@ -466,13 +468,11 @@ class ConceptDiscovery(object):
     Returns:
       A nested dict in the form of {concept:{bottleneck:activation}}
     """
-    rnd_acts_path = os.path.join(self.activation_dir, 'acts_{}_{}'.format(
-        random_concept, bottleneck))
-    if not tf.gfile.Exists(rnd_acts_path):
+    rnd_acts_path = os.path.join(self.activation_dir, f'acts_{random_concept}_{bottleneck}.npy')
+    if not os.path.exists(rnd_acts_path):
       rnd_imgs = self.load_concept_imgs(random_concept, self.max_imgs)
       acts = get_acts_from_images(rnd_imgs, self.model, bottleneck)
-      with tf.gfile.Open(rnd_acts_path, 'w') as f:
-        np.save(f, acts, allow_pickle=False)
+      np.save(rnd_acts_path, acts, allow_pickle=False)
       del acts
       del rnd_imgs
     return np.load(rnd_acts_path).squeeze()
@@ -775,4 +775,3 @@ class ConceptDiscovery(object):
     if mean:
       profile = np.mean(profile, -1)
     return profile
-
