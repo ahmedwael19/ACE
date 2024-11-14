@@ -68,7 +68,7 @@ def load_image_from_file(filename, shape):
       return img
 
   except Exception as e:
-    tf.logging.info(e)
+    tf.get_logger().info('Error loading image: {}'.format(e))
     return None
   return img
 
@@ -313,7 +313,7 @@ def plot_concepts(cd, bn, num=10, address=None, mode='diverse', concepts=None):
       fig.add_subplot(ax)
   plt.suptitle(bn)
   if address is not None:
-    with tf.gfile.Open(address + bn + '.png', 'w') as f:
+    with tf.io.gfile.GFile(address + bn + '.png', 'wb') as f:
       fig.savefig(f)
     plt.clf()
     plt.close(fig)

@@ -75,17 +75,17 @@ def main(args):
     ace_helpers.save_concepts(cd, discovered_concepts_dir)
 
     # Calculate CAVs and TCAV scores
-    cav_accuraciess = cd.cavs(min_acc=0.0)
-    scores = cd.tcavs(test=False)
-    ace_helpers.save_ace_report(cd, cav_accuraciess, scores,
-                                os.path.join(results_summaries_dir, 'ace_results.txt'))
+    #cav_accuraciess = cd.cavs(min_acc=0.0)
+    #scores = cd.tcavs(test=False)
+    #ace_helpers.save_ace_report(cd, cav_accuraciess, scores,
+    #                           os.path.join(results_summaries_dir, 'ace_results.txt'))
 
     # Plot examples of discovered concepts
     for bn in cd.bottlenecks:
         ace_helpers.plot_concepts(cd, bn, 10, address=results_dir)
 
     # Delete concepts that don't pass statistical testing
-    cd.test_and_remove_concepts(scores)
+    #cd.test_and_remove_concepts(scores)
 
 def parse_arguments(argv):
     """Parses the arguments passed to the run.py script."""
